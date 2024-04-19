@@ -1,0 +1,260 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <locale.h>
+#include <windows.h>
+#define MAX_SIZE 100
+
+typedef struct {
+    char name[20];
+    float age;
+    int yeas;
+    int numbers;
+    char city[20];
+}socialnet_t;
+
+char searchByName(socialnet_t programs[], int size, char Name[]);
+float searchByAge(socialnet_t programs[], int size, float maxAge);
+char searchByCity(socialnet_t programs[], int size, char searchCity[]);
+int sortByYeas(socialnet_t programs[], int size);
+int writetofile(socialnet_t programs[], int size);
+
+int main() {
+    socialnet_t programs[100];
+    int size = 0;
+    int choice;
+    int gorod;
+    char (*ptrName)(socialnet_t programs[], int size, char Name[]) = &searchByName;
+    float (*ptrAge)(socialnet_t programs[], int size, float maxAge) = &searchByAge;
+    char (*ptrCity)(socialnet_t programs[], int size, char searchCity[]) = &searchByCity;
+    int (*ptrYeas)(socialnet_t programs[], int size) = &sortByYeas;
+    int (*ptrFile)(socialnet_t programs[], int size) = &writetofile;
+    system("chcp 1251");
+    system("cls");
+
+    do {
+        printf("Меню:\n");
+        printf("1) Добавить запись\n");
+        printf("2) Поиск по названию социальной сети\n");
+        printf("3) Поиск по возрасту\n");
+        printf("4) Сортировка по дате регистрации\n");
+        printf("5) Поиск по названию города\n");
+        printf("6) Записать в файл\n");
+        printf("7) Выход из программы\n");
+        printf("Выберите пункт меню: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+        case 1:
+            if (size < MAX_SIZE) {
+                printf("Введите данные для новой программы:\n");
+                printf("Название социальной сети: ");
+                scanf(" %[^\n]s", programs[size].name);
+                printf("Возраст: ");
+                scanf("%f", &programs[size].age);
+                printf("Выбирите город проживания:\n");
+                printf("1-Воронеж\n2-Москва\n3-Санкт-Петербург\n4-Ростов\n:");
+                scanf(" %d", &gorod);
+                switch (gorod)
+                {
+                case 1:
+                    strcpy(programs[size].city, "Воронеж");
+                    break;
+                case 2:
+                    strcpy(programs[size].city, "Москва");
+                    break;
+                case 3:
+                    strcpy(programs[size].city, "Санкт-Петербург");
+                    break;
+                case 4:
+                    strcpy(programs[size].city, "Ростов");
+                    break;
+                default:
+                    printf("Некорректный ввод, введите один из предложенных вариантов");
+                }
+                printf("Год регистрации: ");
+                scanf("%d", &programs[size].yeas);
+                printf("Количество друзей: ");
+                scanf("%d", &programs[size].numbers);
+                size++;
+            }
+            else {
+                printf("База данных полна. Невозможно добавить новую запись.\n");
+            }
+            break;
+        case 2:
+            if (size > 0) {
+                char Name[10];
+                printf("Введите название социальной сети для поиска: ");
+                scanf(" %s", Name);
+                ptrName(programs, size, Name);
+            }
+            else {
+                printf("База данных пуста.\n");
+            }
+            break;
+        case 3:
+            if (size > 0) {
+                float maxAge;
+                printf("Введите возраст для поиска: ");
+                scanf(" %f", &maxAge);
+                ptrAge(programs, size, maxAge);
+            }
+            else {
+                printf("База данных пуста.\n");
+            }
+            break;
+        case 4:
+            if (size > 0) {
+                sortByYeas(programs, size);
+                printf("\nОтсортированные данные по дате регистрации (В порядке убывания):\n");
+                for (int i = 0; i < size; ++i) {
+                    printf("Имя пользователя: %s, Дата регистрации: %d\n", programs[i].name, programs[i].yeas);
+                }
+            }
+            else {
+                printf("База данных пуста.\n");
+            }
+            break;
+        case 5:
+            if (size > 0) {
+                char searchCity[20];
+                printf("Введите название города для поиска: ");
+                scanf(" %s", &searchCity);
+                ptrCity(programs, size, searchCity);
+            }
+            else {
+                printf("База данных пуста. Нечего записывать в файл.\n");
+            }
+            break;
+        case 6:
+            if (size > 0) {
+                ptrFile(programs, size);
+            }
+            else {
+                printf("База данных пуста. Нечего записывать в файл.\n");
+            }
+            break;
+        case 7:
+            printf("Программа завершена.\n");
+            break;
+        default:
+            printf("Некорректный ввод. Пожалуйста, выберите существующий пункт меню.\n");
+        }
+
+    } while (choice != 7);
+}
+
+char searchByName(socialnet_t programs[], int size, char Name[]) {
+    int found = 0;
+    printf("\nРезультаты поиска по названию социальной сети \"%s\":\n", Name);
+    printf("_________________________________________________________________________________________\n");
+    printf("| Название            | Возраст | Город проживания    | Год регистрации | Кол-во друзей |\n");
+    printf("|_____________________|_________|_____________________|_________________|_______________|\n");
+    for (int i = 0; i < size; ++i) {
+        if (strstr(programs[i].name, Name) != NULL) {
+            found = 1;
+            printf("| %-20s| %-7.1f | %-20s| %-15d | %-13d |\n", programs[i].name, programs[i].age, programs[i].city, programs[i].yeas, programs[i].numbers);
+            printf("|                     |         |                     |                 |               |\n");
+            printf("|_____________________|_________|_____________________|_________________|_______________|\n");
+        }
+    }
+    if (found == 0) {
+        printf("Результаты поиска: Ничего не найдено.\n");
+    }
+    return found;
+}
+
+float searchByAge(socialnet_t programs[], int size, float age) {
+    int found = 0;
+
+    printf("\nРезультаты поиска по возрасту %.1f:\n", age);
+    printf("_________________________________________________________________________________________\n");
+    printf("| Название            | Возраст | Город проживания    | Год регистрации | Кол-во друзей |\n");
+    printf("|_____________________|_________|_____________________|_________________|_______________|\n");
+
+    for (int i = 0; i < size; ++i) {
+        if (programs[i].age == age) {
+            found = 1;
+            printf("| %-20s| %-7.1f | %-20s| %-15d | %-13d |\n", programs[i].name, programs[i].age, programs[i].city, programs[i].yeas, programs[i].numbers);
+            printf("|                     |         |                     |                 |               |\n");
+            printf("|_____________________|_________|_____________________|_________________|_______________|\n");
+        }
+    }
+
+    if (found == 0) {
+        printf("Результаты поиска: Ничего не найдено.\n");
+    }
+
+    return found ? 1 : 0;
+}
+
+char searchByCity(socialnet_t programs[], int size, char searchCity[]) {
+    int found = 0;
+    printf("\nРезультаты поиска по городу \"%s\":\n", searchCity);
+    printf("_________________________________________________________________________________________\n");
+    printf("| Название            | Возраст | Город проживания    | Год регистрации | Кол-во друзей |\n");
+    printf("|_____________________|_________|_____________________|_________________|_______________|\n");
+    for (int i = 0; i < size; ++i) 
+    {
+        if (strstr(programs[i].city, searchCity) != NULL) 
+        {
+            found = 1;
+            printf("| %-20s| %-7.1f | %-20s| %-15d | %-13d |\n", programs[i].name, programs[i].age, programs[i].city, programs[i].yeas, programs[i].numbers);
+            printf("|                     |         |                     |                 |               |\n");
+            printf("|_____________________|_________|_____________________|_________________|_______________|\n");
+        }
+    }
+    if (found == 0) 
+    {
+        printf("Результаты поиска: Ничего не найдено.\n");
+    }
+    return found ? 1 : 0;
+}
+
+int sortByYeas(socialnet_t programs[], int size) {
+    socialnet_t temp;
+    for (int i = 0; i < size - 1; ++i) {
+        for (int j = i + 1; j < size; ++j) {
+            if (programs[i].yeas < programs[j].yeas) {
+                temp = programs[i];
+                programs[i] = programs[j];
+                programs[j] = temp;
+            }
+        }
+    }
+
+    printf("\nОтсортированные данные по дате регистрации (в порядке убывания):\n");
+    printf("_____________________________________________________________________________________________\n");
+    printf("| Название            | Возраст | Город проживания    | Год регистрации | Кол-во друзей |\n");
+    printf("|_____________________|_________|_____________________|_________________|_______________|\n");
+
+    for (int i = 0; i < size; ++i) {
+        printf("| %-20s| %-7.1f | %-20s| %-15d | %-13d |\n", programs[i].name, programs[i].age, programs[i].city, programs[i].yeas, programs[i].numbers);
+        printf("|                     |         |                     |                 |               |\n");
+        printf("|_____________________|_________|_____________________|_________________|_______________|\n");
+    }
+    return 1;
+}
+
+int writetofile(socialnet_t programs[], int size) {
+    FILE* file = fopen("programs.txt", "w");
+    if (file == NULL) 
+    {
+        printf("Не удалось открыть файл для записи.\n");
+        return 0;
+    }
+
+    for (int i = 0; i < size; ++i) {
+        fprintf(file, "Название социальной сети: %s\n", programs[i].name);
+        fprintf(file, "Возраст: %f\n", programs[i].age);
+        fprintf(file, "Город проживания: %s\n", programs[i].city);
+        fprintf(file, "Год регистрации: %d\n", programs[i].yeas);
+        fprintf(file, "Количество друзей: %d\n", programs[i].numbers);
+        fprintf(file, "------------------------------------------------\n");
+    }
+
+    fclose(file);
+    printf("Данные успешно записаны в файл.\n");
+    return 1;
+}
